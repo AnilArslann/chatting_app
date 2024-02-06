@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+<script>
+  var socket = io();
+</script>
+
+
+       </script>
+
+</head>
+<body>
+    <div class="container">
+        <br>
+        <div class="jumbotron">
+            <h1 class="display-4">Send Message</h1>
+            <br>
+            <input id="name" class="form-control" placeholder="Name">
+            <br>
+            <textarea id="message" class="form-control" placeholder="Your Message Here"></textarea>
+            <br>
+            <button id="send" class="btn btn-success">Send</button>
+            <div id="alert" class="alert alert-success" role="alert" style="display: none;">
+                This is a success alert—check it out!
+              </div>
+        </div>
+        <div id="messages"></div>
+    </div>
+
+    <script>
+
+       
+        $(document).ready(() => {
+            $('#send').click(() => {
+                console.log("Button Clicked");
+                const name=$('#name').val();
+                const message=$('#message').val();
+                const sent_at=new Date();
+               send_message({
+                    name: name,
+                    message: message,
+                    sent_at: sent_at
+                });
+                socket.emit('chat message', {name: name, message: message, sent_at: sent_at});
+
+               
+
+                    $('#alert').fadeIn('slow');
+                    setTimeout(function() {
+                        $('#alert').fadeOut('slow');
+                    }, 5000);
+                
+               
+
+            });
+            get_messages();
+        });
+
+        function send_message(message) {
+            $.post('http://localhost:3000/messages', message)
+                .done((data) => {
+                    console.log(data);
+                    $('#messages').append(add_message(message));
+                    
+                })
+                .fail((xhr, status, error) => {
+                    console.error('Error sending message:', error);
+                    
+                });
+        }
+
+        function get_messages() {
+            $.get('http://localhost:3000/messages')
+                .done((data) => {
+                    data.forEach(add_message);
+                })
+                .fail((xhr, status, error) => {
+                    console.error('Error getting messages:', error);
+                });
+        }
+
+        function add_message(message) {
+            $('#messages').append(`<h4>${message.name}</h4><p>${message.message}</p><small>${new Date(message.sent_at).toUTCString()}</small><hr>`);
+        }
+        socket.on('chat message', function(msg){
+            console.log('chat message received: ', msg.message);
+            add_message(msg);
+          });
+
+    </script>
+</body>
+</html>
