@@ -60,9 +60,20 @@ app.post('/messages', (req, res) => {
 io.on('connection', (socket) => {
     console.log('a user connected');
     socket.on('chat message', (msg) => {
-        io.emit('chat message', msg);
+        socket.broadcast.emit('chat message', msg);
         console.log('message: ' + msg.message);
-  })});
+  })
+    socket.on('disconnect', () => {
+        io.emit('other user disconnected');
+        console.log('user disconnected');
+    });
+    socket.on('typing', (usr) => {
+        console.log('typing: ' + usr);
+        io.emit('typing', usr);
+    }
+    );
+
+});
   server.listen(3000, () => {
     console.log('listening on *:3000');
   }

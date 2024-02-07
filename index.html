@@ -26,6 +26,12 @@
             <div id="alert" class="alert alert-success" role="alert" style="display: none;">
                 This is a success alert—check it out!
               </div>
+              <div id="disconnect-alert" class="alert alert-success" role="alert" style="display: none;">
+                Other user disconnected
+              </div>
+              <div id="typing-alert" class="alert alert-success" role="alert" style="display: none;">
+                
+              </div>
         </div>
         <div id="messages"></div>
     </div>
@@ -57,7 +63,19 @@
 
             });
             get_messages();
+            let typingTimer;
+const doneTypingInterval = 1000; // 1 second
+
+$('#message').on('input', function(e) {
+    console.log('typing...');
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(function() {
+        socket.emit('typing', $('#name').val());
+    }, doneTypingInterval);
+});
         });
+
+      
 
         function send_message(message) {
             $.post('http://localhost:3000/messages', message)
@@ -88,6 +106,21 @@
         socket.on('chat message', function(msg){
             console.log('chat message received: ', msg.message);
             add_message(msg);
+          });
+          socket.on('other user disconnected', function(){
+            $('#disconnect-alert').fadeIn('slow');
+                    setTimeout(function() {
+                        $('#disconnect-alert').fadeOut('slow');
+                    }, 5000);
+            console.log('other user disconnected: ',);
+          });
+          socket.on('typing', (name)=>{
+            $('#typing-alert').text(name + ' is typing...');
+            $('#typing-alert').fadeIn('slow');
+                    setTimeout(function() {
+                        $('#typing-alert').fadeOut('slow');
+                    }, 5000);
+            console.log(name + ' is typing...');
           });
 
     </script>
